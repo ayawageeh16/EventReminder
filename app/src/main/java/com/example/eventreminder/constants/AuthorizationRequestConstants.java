@@ -1,6 +1,6 @@
 package com.example.eventreminder.constants;
 
-public class AuthorizationRequestConstants {
+public final class AuthorizationRequestConstants {
     public static final String CLIENT_ID = "969174132651-mm8a60f8jm1i8bj24c8mov3c1rj3qs01.apps.googleusercontent.com";
     public static final String REDIRECT_URI = "http://localhost";
     public static final String SCOPE = "https://www.googleapis.com/auth/calendar.events";

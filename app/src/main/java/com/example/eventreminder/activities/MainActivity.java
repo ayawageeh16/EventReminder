@@ -3,7 +3,6 @@ package com.example.eventreminder.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,7 +25,6 @@ import com.example.eventreminder.repositories.AppController;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 
@@ -45,6 +43,17 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
         setContentView(R.layout.activity_main);
         getToken = findViewById(R.id.loginBtn);
 
+        // Check if User is Already Logged In
+        SharedPreferences preferences = this.getSharedPreferences(
+                SharedPreferencesConstant.EVENTREMINDER_SHARED_PREFERENCES, this.MODE_PRIVATE);
+        code = preferences.getString(SharedPreferencesConstant.ACCESS_TOKEN_SHARED_PREFERENCES, "");
+        if (code != null && !code.equalsIgnoreCase("")) {
+            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+            startActivity(intent);
+        } else {
+            getToken.setVisibility(View.VISIBLE);
+        }
+
         getToken.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -55,6 +64,9 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
 
     }
 
+    /**
+     * This Method Setup ActionBar
+     */
     private void setActionBar() {
         requestWindowFeature(Window.FEATURE_NO_TITLE); //will hide the title
         getSupportActionBar().hide(); // hide the title bar
@@ -62,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN); //enable full screen
     }
 
+    /**
+     * In This Method Get Returned Authorization Token
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -83,7 +98,11 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
         }
     }
 
-    private void requestToken(String  tokenUrl) {
+    /**
+     * This Method Requests Access Token
+     * @param tokenUrl String Url
+     */
+    private void requestToken(String tokenUrl) {
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                 tokenUrl, null,
                 new Response.Listener<JSONObject>() {
@@ -113,7 +132,11 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
         AppController.getInstance().addToRequestQueue(jsonObjReq);
     }
 
-    private void saveTokenInSharedPreferences(String accessToken){
+    /**
+     * This Method Saves Access Token in SharedPreferences
+     * @param accessToken String
+     */
+    private void saveTokenInSharedPreferences(String accessToken) {
         SharedPreferences.Editor editor = getSharedPreferences(SharedPreferencesConstant.EVENTREMINDER_SHARED_PREFERENCES
                 , MODE_PRIVATE).edit();
         editor.putString(SharedPreferencesConstant.ACCESS_TOKEN_SHARED_PREFERENCES, accessToken);

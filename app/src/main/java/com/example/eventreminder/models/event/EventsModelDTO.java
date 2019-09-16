@@ -1,10 +1,5 @@
 package com.example.eventreminder.models.event;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import com.example.eventreminder.models.weather.WeatherModel;
-
 import java.io.Serializable;
 import java.util.List;
 

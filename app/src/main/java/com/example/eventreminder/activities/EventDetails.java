@@ -1,8 +1,5 @@
 package com.example.eventreminder.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,16 +9,18 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
 import com.example.eventreminder.R;
 import com.example.eventreminder.constants.SharedPreferencesConstant;
+import com.example.eventreminder.constants.UpdateEventStatusRequestConstants;
 import com.example.eventreminder.constants.WeatherRequestConstants;
 import com.example.eventreminder.models.event.Attendee;
 import com.example.eventreminder.models.event.EventAttendessDTO;
@@ -31,9 +30,19 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class EventDetails extends AppCompatActivity {
 
@@ -62,6 +71,7 @@ public class EventDetails extends AppCompatActivity {
     private String userEmail;
     private String creatorEmail;
     private EventAttendessDTO event;
+    private Attendee userAttendee;
     private String code;
 
     @Override
@@ -105,7 +115,7 @@ public class EventDetails extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!code.equalsIgnoreCase("")) {
-                    AcceptOrDeclineEventVolleyRequest();
+                    AcceptOrDeclineEventVolleyRequest("accepted");
                 }
                 dismissSnackBar();
             }
@@ -115,15 +125,17 @@ public class EventDetails extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!code.equalsIgnoreCase("")) {
-                    AcceptOrDeclineEventVolleyRequest();
+                    AcceptOrDeclineEventVolleyRequest("declined");
                 }
                 dismissSnackBar();
             }
         });
 
-
     }
 
+    /**
+     * This Method Displays Event Details
+     */
     private void setView() {
 
         Glide.with(EventDetails.this)
@@ -160,29 +172,42 @@ public class EventDetails extends AppCompatActivity {
         }
 
         // Ask User to Confirm The Event If Needed
-        if(!event.getUserEmail().equals(event.getEvent().getCreator().getEmail())){
+        if (!event.getUserEmail().equals(event.getEvent().getCreator().getEmail())) {
             for (Attendee attendee : event.getEvent().getAttendees()) {
                 String userEmail = attendee.getEmail();
                 if (event.getUserEmail().equals(userEmail)) {
-                    if(attendee.getResponseStatus().equalsIgnoreCase("needsAction")){}
-                    acceptDeclineLayout.setVisibility(View.VISIBLE);
-                    showSnakeBar();
-                    break;
+                    if (attendee.getResponseStatus().equalsIgnoreCase("needsAction")) {
+                        userAttendee = attendee;
+                        acceptDeclineLayout.setVisibility(View.VISIBLE);
+                        showSnakeBar();
+                        break;
+                    }
                 }
             }
         }
 
     }
 
+    /**
+     * This Method Show SnakeBar
+     */
     private void showSnakeBar() {
         snackbar = Snackbar.make(detailsLayout, R.string.item_removed_message, Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
     }
 
+    /**
+     * This Method Dismiss SnackBar
+     */
     private void dismissSnackBar() {
         snackbar.dismiss();
     }
 
+    /**
+     * This Method Extract Date And Return Right Date Format
+     * @param originalString
+     * @return String Date
+     */
     private String getDate(String originalString) {
         if (originalString != null) {
             return originalString.split("T")[0];
@@ -190,6 +215,11 @@ public class EventDetails extends AppCompatActivity {
         return "Not specified";
     }
 
+    /**
+     * This Method Extract Time And Return Time Date Format
+     * @param originalString
+     * @return String Time
+     */
     private String getTime(String originalString) {
         if (originalString != null) {
             String[] dateAndTimeArray = originalString.split("T");
@@ -199,11 +229,15 @@ public class EventDetails extends AppCompatActivity {
         return "Not specified";
     }
 
+    /**
+     * This Method Implements Weather Request
+     * @param city String location if found or Event Time Zone City
+     */
     private void getWeatherVolleyRequest(final String city) {
 
         StringBuilder URL = new StringBuilder(WeatherRequestConstants.WEATHER_MAIN_API_URL);
         URL.append("q=").append(city).append(WeatherRequestConstants.WEATHER_KEY);
-        
+
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
                 URL.toString(), null,
                 new Response.Listener<JSONObject>() {
@@ -226,6 +260,10 @@ public class EventDetails extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(jsonObjReq);
     }
 
+    /**
+     * This Method Displays Weather Data
+     * @param weather
+     */
     private void setWeatherViews(WeatherModel weather) {
         eventWeatherTv.setText(weather.getWeather().get(0).getDescription());
         eventTempMaxTextView.setText(new DecimalFormat("##.##").format((weather.getMain().getTempMax() - 273.15)) + "°");
@@ -238,30 +276,86 @@ public class EventDetails extends AppCompatActivity {
                 .into(weatherIconImageView);
     }
 
-    private void AcceptOrDeclineEventVolleyRequest() {
+    /**
+     * This Method Implements Accept Or Decline Event Logic
+     * @param updatedStatus
+     */
+    private void AcceptOrDeclineEventVolleyRequest(final String updatedStatus) {
 
-        StringBuilder URL = new StringBuilder(WeatherRequestConstants.WEATHER_MAIN_API_URL);
-        URL.append("q=").append(city).append(WeatherRequestConstants.WEATHER_KEY);
+        StringBuilder URL = new StringBuilder(UpdateEventStatusRequestConstants.UPDATE_EVENT_STATUS_MAIN_URI);
+        URL.append(event.getEvent().getId()).append(UpdateEventStatusRequestConstants.API_KEY);
 
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
-                URL.toString(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("weatherVolleyresponse", response.toString());
-                        WeatherModel weatherModel = gson.fromJson(response.toString(), WeatherModel.class);
-                        setWeatherViews(weatherModel);
-                    }
-                }, new Response.ErrorListener() {
+        // Create Request Body
+        JSONObject jsonBodyObj = new JSONObject();
+        try {
+            for (Attendee attendee : event.getEvent().getAttendees()) {
+                String userEmail = attendee.getEmail();
+                if (event.getUserEmail().equals(userEmail)) {
+                    attendee.setResponseStatus(updatedStatus);
+                    break;
+                }
+            }
+            String start = gson.toJson(event.getEvent().getStart());
+            String end = gson.toJson(event.getEvent().getEnd());
+            String attendees = gson.toJson(event.getEvent().getAttendees());
+            jsonBodyObj.put("end", end);
+            jsonBodyObj.put("start", start);
+            jsonBodyObj.put("attendees", attendees);
 
+            Log.i("updareurl", URL.toString() + "  " + "start :" + start + "end: " + end + "attendees[]: " + attendees);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final String requestBody = jsonBodyObj.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.PUT,
+                URL.toString(), new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.i("JSONPost", response.toString());
+                acceptDeclineLayout.setVisibility(View.INVISIBLE);
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("weathervolleyError", "Error: " + error.getMessage());
+                VolleyLog.d("JSONPost", "Error: " + error.getMessage());
+                //pDialog.hide();
             }
-        });
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("authorization", "Bearer " + code);
+                return headers;
+            }
 
+            // this is the relevant method
+            @Override
+            public byte[] getBody() {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s",
+                            requestBody, "utf-8");
+                    return null;
+                }
+            }
+        };
         // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(jsonObjReq);
+        AppController.getInstance().addToRequestQueue(stringRequest);
+    }
+
+    // TODO Find Overlapped Events
+    private boolean chechForOverlapping(String start1, String end1, String start2, String end2) throws ParseException {
+
+        Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date3 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date4 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+
+        return date1.getTime() <= date2.getTime() && date3.getTime() <= date4.getTime();
     }
 }
 

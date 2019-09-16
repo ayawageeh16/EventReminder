@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -23,12 +24,18 @@ import com.example.eventreminder.models.event.Item;
 import com.example.eventreminder.repositories.AppController;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,8 +67,8 @@ public class HomeActivity extends AppCompatActivity {
         // Get Access Token From SharedPreferences And Request Events List
         SharedPreferences preferences = this.getSharedPreferences(
                 SharedPreferencesConstant.EVENTREMINDER_SHARED_PREFERENCES, this.MODE_PRIVATE);
-        code =  preferences.getString(SharedPreferencesConstant.ACCESS_TOKEN_SHARED_PREFERENCES, "");
-        if(!code.equalsIgnoreCase("")) {
+        code = preferences.getString(SharedPreferencesConstant.ACCESS_TOKEN_SHARED_PREFERENCES, "");
+        if (!code.equalsIgnoreCase("")) {
             getEventsVolleyRequest();
         }
 
@@ -70,7 +77,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onItemClick(EventAttendessDTO event) {
                 Intent intent = new Intent(HomeActivity.this, EventDetails.class);
-                intent.putExtra("event",event);
+                intent.putExtra("event", event);
                 startActivity(intent);
             }
         });
@@ -79,7 +86,7 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * This Method Setup Events RecyclerView
      */
-    private void setRecyclerView(){
+    private void setRecyclerView() {
         eventsRecyclerViewAdapter = new EventsRecyclerViewAdapter(this);
         eventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         eventsRecyclerView.setHasFixedSize(true);
@@ -105,9 +112,10 @@ public class HomeActivity extends AppCompatActivity {
                         sortEventsDescending(events);
 
                         // Set RecyclerView Adapter Data
-                        EventsModelDTO eventsModelDTO = new EventsModelDTO(events,eventsItems.getSummary());
+                        EventsModelDTO eventsModelDTO = new EventsModelDTO(events, eventsItems.getSummary());
                         eventsRecyclerViewAdapter.setEvents(eventsModelDTO);
                         eventsRecyclerView.setAdapter(eventsRecyclerViewAdapter);
+
                     }
                 }, new Response.ErrorListener() {
 
@@ -129,10 +137,11 @@ public class HomeActivity extends AppCompatActivity {
 
     /**
      * This Method Sorts The List Of Events According To Its Created Date Attribute Descending
-     * @param  events List<Item>
+     *
+     * @param events List<Item>
      * @return Sorted List<Item>
      */
-    private List<Item> sortEventsDescending (List<Item> events){
+    private List<Item> sortEventsDescending(List<Item> events) {
         Collections.sort(events, new Comparator<Item>() {
             @Override
             public int compare(Item item1, Item item2) {
@@ -140,6 +149,17 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
         return events;
+    }
+
+    // TODO Find Overlapped Events
+    private boolean chechForOverlapping(String start1, String end1, String start2, String end2) throws ParseException {
+
+        Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date3 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+        Date date4 = new SimpleDateFormat("dd/MM/yyyy").parse(start1);
+
+        return date1.getTime() <= date2.getTime() && date3.getTime() <= date4.getTime();
     }
 
 }

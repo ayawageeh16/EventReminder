@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.eventreminder.R;
+import com.example.eventreminder.daos.UpdateDao;
 import com.example.eventreminder.models.event.Attendee;
 import com.example.eventreminder.models.event.EventAttendessDTO;
 import com.example.eventreminder.models.event.EventsModelDTO;
@@ -15,7 +16,7 @@ import com.example.eventreminder.models.event.Item;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecyclerViewAdapter.EventsViewHolder> {
+public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecyclerViewAdapter.EventsViewHolder> implements UpdateDao {
 
     private EventsModelDTO events;
     private OnItemClickListener listener;
@@ -56,6 +57,12 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
         return events.getItems().get(position);
     }
 
+    @Override
+    public void sendNewData(EventsModelDTO eventsModelDTO) {
+        this.events = eventsModelDTO;
+        notifyDataSetChanged();
+    }
+
     public class EventsViewHolder extends RecyclerView.ViewHolder {
 
         private TextView eventTitleTextView;
@@ -89,25 +96,25 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
             eventTitleTextView.setText(event.getSummary());
             eventDescriptionTextView.setText(event.getDescription());
             String date = event.getStart().getDate();
-            if(date!=null && !date.isEmpty()) {
+            if (date != null && !date.isEmpty()) {
                 eventTimeTextView.setText(date);
-            }else{
+            } else {
                 eventTimeTextView.setText(getDate(event.getStart().getDateTime()));
             }
 
-            if(userEmail.equals(event.getCreator().getEmail())){
+            if (userEmail.equals(event.getCreator().getEmail())) {
                 eventStatusTextView.setText(event.getStatus());
-            }else{
-                for(Attendee attendee: event.getAttendees()) {
-                    if(attendee.getEmail().equals(userEmail)){
+            } else {
+                for (Attendee attendee : event.getAttendees()) {
+                    if (attendee.getEmail().equals(userEmail)) {
                         eventStatusTextView.setText(attendee.getResponseStatus());
                     }
                 }
             }
         }
 
-        private String getDate(String originalString){
-            if(originalString !=null){
+        private String getDate(String originalString) {
+            if (originalString != null) {
                 return originalString.split("T")[0];
             }
             return "Not specified";

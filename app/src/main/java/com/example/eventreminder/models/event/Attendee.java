@@ -1,8 +1,5 @@
 package com.example.eventreminder.models.event;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -22,6 +19,18 @@ public class Attendee implements Serializable {
     @SerializedName("self")
     @Expose
     private Boolean self;
+    @SerializedName("resource")
+    @Expose
+    private Boolean resource;
+    @SerializedName("optional")
+    @Expose
+    private Boolean optional;
+    @SerializedName("comment")
+    @Expose
+    private String comment;
+    @SerializedName("additionalGuests")
+    @Expose
+    private Integer additionalGuests;
 
     public String getEmail() {
         return email;
@@ -49,6 +58,38 @@ public class Attendee implements Serializable {
 
     public Boolean getSelf() {
         return self;
+    }
+
+    public Boolean getResource() {
+        return resource;
+    }
+
+    public void setResource(Boolean resource) {
+        this.resource = resource;
+    }
+
+    public Boolean getOptional() {
+        return optional;
+    }
+
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Integer getAdditionalGuests() {
+        return additionalGuests;
+    }
+
+    public void setAdditionalGuests(Integer additionalGuests) {
+        this.additionalGuests = additionalGuests;
     }
 
     public void setSelf(Boolean self) {

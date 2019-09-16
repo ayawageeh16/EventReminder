@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    android:background="#ffffff"
+    android:layout_margin="4dp"
+    android:elevation="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="2">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true">
+
+                <ImageView
+                    android:id="@+id/event_icon_img"
+                    android:layout_width="50dp"
+                    android:layout_marginTop="-8dp"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/ic_calendar_logo" />
+
+            </RelativeLayout>
+           <LinearLayout
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:orientation="horizontal"
+               android:layout_alignParentRight="true"
+               android:layout_weight="2"
+               android:weightSum="3"
+               >
+
+               <LinearLayout
+                   android:layout_width="0dp"
+                   android:layout_height="wrap_content"
+                   android:orientation="vertical"
+                   android:layout_weight="2"
+                   android:layout_marginLeft="8dp"
+                   >
+
+                   <TextView
+                       android:id="@+id/event_title_tv"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       tools:text="title"
+                       android:ellipsize="end"
+                       android:maxLines="1"
+                       android:textColor="@color/colorAsfalt"
+                       android:textSize="24dp" />
+
+                   <LinearLayout
+                       android:layout_marginTop="4dp"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:orientation="vertical">
+
+                       <TextView
+                           android:id="@+id/event_description_tv"
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           tools:text="description" />
+
+                       <LinearLayout
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:layout_marginLeft="2dp"
+                           android:orientation="horizontal">
+
+                           <TextView
+                               android:id="@+id/event_time_tv"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               tools:text="time"/>
+
+                       </LinearLayout >
+
+                   </LinearLayout>
+
+               </LinearLayout>
+
+               <TextView
+                   android:id="@+id/event_status_tv"
+                   android:layout_width="0dp"
+                   android:layout_weight="1"
+                   android:layout_height="wrap_content"
+                   tools:text="confirmed"
+                   android:maxLines="1"
+                   android:padding="1dp"
+                   android:textColor="@color/colorAccent"
+                   />
+
+           </LinearLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

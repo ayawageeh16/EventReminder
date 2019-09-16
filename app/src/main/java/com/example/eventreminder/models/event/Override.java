@@ -1,0 +1,38 @@
+
+package com.example.eventreminder.models.event;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+
+public class Override implements Serializable {
+
+    @SerializedName("method")
+    @Expose
+    private String method;
+    @SerializedName("minutes")
+    @Expose
+    private Integer minutes;
+
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public Integer getMinutes() {
+        return minutes;
+    }
+
+    public void setMinutes(Integer minutes) {
+        this.minutes = minutes;
+    }
+
+}
